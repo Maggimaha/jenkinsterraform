@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Terraform Repository') {
+            steps {
+                // Clean workspace before cloning
+                deleteDir()
+
+                // Clone the Terraform repository
+                git branch: 'main',  url: 'https://github.com/Maggimaha/jenkinsterraform.git'
+            }
+        }
+
+        stage('Install Terraform') {
+            steps {
+                // Download and install Terraform
+                sh 'curl -O https://releases.hashicorp.com/terraform/0.15.0/terraform_0.15.0_linux_amd64.zip'
+                sh 'unzip terraform_0.15.0_linux_amd64.zip'
+                sh 'chmod +x terraform'
+                sh 'mv terraform /usr/local/bin/'
+                sh 'terraform --version'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                // Change to the Terraform project directory
+                dir('path/to/your-terraform-repo') {
+                    // Run terraform init
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                // Change to the Terraform project directory
+                dir('path/to/your-terraform-repo') {
+                    // Run terraform plan
+                    sh 'terraform plan -out=tfplan'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                // Change to the Terraform project directory
+                dir('path/to/your-terraform-repo') {
+                    // Run terraform apply with auto-approve
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
